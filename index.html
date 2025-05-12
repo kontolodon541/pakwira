@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tomato Quality Control</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #e9ecef;
+      color: #495057;
+    }
+
+    header {
+      background-color: #343a40;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 2rem;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+      transition: transform 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card h3 {
+      margin-top: 0;
+      color: #495057;
+      font-size: 1.5rem;
+      border-bottom: 2px solid #343a40;
+      padding-bottom: 0.5rem;
+    }
+
+    .photo {
+      width: 100%;
+      border-radius: 12px;
+      object-fit: cover;
+      margin-bottom: 1rem;
+    }
+
+    .param {
+      font-size: 1.2rem;
+      margin: 0.5rem 0;
+      font-weight: 500;
+    }
+
+    .toggle-btn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease, transform 0.3s;
+      margin-top: 1rem;
+    }
+
+    .toggle-btn:hover {
+      background-color: #0056b3;
+      transform: scale(1.05);
+    }
+
+    .status-output {
+      font-size: 1.5rem;
+      padding: 0.8rem;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: bold;
+      margin-top: 1rem;
+    }
+
+    .output-bagus { background-color: #28a745; color: white; }
+    .output-baik { background-color: #ffc107; color: white; }
+    .output-buruk { background-color: #dc3545; color: white; }
+
+    @media (max-width: 600px) {
+      header {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>Tomato Quality Control</header>
+
+  <div class="container">
+
+    <!-- Team Photo -->
+    <div class="card">
+      <h3>Team Photo</h3>
+      <img src="https://i.ibb.co/1YzFvs7v/foto-tim.jpg" alt="Team Photo" class="photo" />
+    </div>
+
+    <!-- Project Photo -->
+    <div class="card">
+      <h3>Project Photo</h3>
+      <img src="https://via.placeholder.com/400x250?text=IoT+Project" alt="Project Photo" class="photo" />
+    </div>
+
+    <!-- Sensor Parameters -->
+    <div class="card">
+      <h3>Sensor Parameters</h3>
+      <div class="param">Weight: <strong id="berat">Loading...</strong></div>
+      <div class="param">Color: <strong id="warna">Loading...</strong></div>
+    </div>
+
+    <!-- Toggle Button -->
+    <div class="card">
+      <h3>Display Control</h3>
+      <button class="toggle-btn" onclick="toggleDisplay(this)">Turn On</button>
+    </div>
+
+    <!-- Quality Output -->
+    <div class="card">
+      <h3>Quality Output</h3>
+      <div id="output" class="status-output">Loading...</div>
+    </div>
+
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+  <script>
+    // Konfigurasi Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyC4QjhvYjIMdtGzfv_k3zl7S5kTj4re3a0",
+      authDomain: "kontolodon-92b4a.firebaseapp.com",
+      databaseURL: "https://kontolodon-92b4a-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "kontolodon-92b4a",
+      storageBucket: "kontolodon-92b4a.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Inisialisasi Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Ambil data dari Firebase
+    function bacaDataTomat() {
+      db.ref("data_tomat").on("value", (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          document.getElementById("berat").textContent = data.berat + " grams";
+          document.getElementById("warna").textContent = data.warna;
+
+          const output = document.getElementById("output");
+          output.textContent = data.kualitas;
+
+          if (data.kualitas.toLowerCase() === "bagus") {
+            output.className = "status-output output-bagus";
+          } else if (data.kualitas.toLowerCase() === "baik") {
+            output.className = "status-output output-baik";
+          } else {
+            output.className = "status-output output-buruk";
+          }
+        }
+      });
+    }
+
+    // Panggil saat halaman dimuat
+    window.onload = bacaDataTomat;
+
+    // Tombol toggle hanya simulasi
+    function toggleDisplay(btn) {
+      btn.classList.toggle('active');
+      if (btn.classList.contains('active')) {
+        btn.textContent = "Turn Off";
+      } else {
+        btn.textContent = "Turn On";
+      }
+    }
+  </script>
+</body>
+</html>
